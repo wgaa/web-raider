@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Raider tool</title>
+    <title>Raid tool</title>
     <style>
         :root {
             --main-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -105,15 +105,15 @@
 <body>
 
 <div class="card">
-    <h1>Raider tool</h1>
+    <h1>Raid tool</h1>
 
     <div class="form-group">
-        <label>DISCORD TOKENS (1 line per token)</label>
+        <label>Tokens</label>
         <textarea id="tokens" rows="3" placeholder="Token1&#10;Token2"></textarea>
     </div>
 
     <div class="form-group">
-        <label>SERVER ID & FETCH CHANNELS</label>
+        <label>Server ID</label>
         <div class="row">
             <input type="text" id="serverId" placeholder="サーバーIDを入力">
             <button class="btn-fetch" id="fetchChannels">GET CHANNELS</button>
@@ -121,36 +121,36 @@
     </div>
 
     <div class="form-group">
-        <label>TARGET CHANNEL IDs (Comma separated)</label>
+        <label>Channel IDs</label>
         <textarea id="channelIds" rows="2" placeholder="自動取得するか直接入力"></textarea>
     </div>
 
     <div class="form-group">
-        <label>MESSAGE CONTENT</label>
+        <label>Message</label>
         <textarea id="message" rows="4" placeholder="メッセージを入力（Enterで改行）"></textarea>
         <label class="checkbox-group">
             <input type="checkbox" id="useRandom" checked>
-            <span>ランダム文字列を付与する</span>
+            <span>Random letter</span>
         </label>
     </div>
 
     <div class="row">
         <div class="form-group" style="flex: 1;">
-            <label>MODE</label>
+            <label>Mode and delay</label>
             <select id="mode">
-                <option value="parallel">Parallel (一斉送信)</option>
-                <option value="sequential">Sequential (1人ずつ順番)</option>
+                <option value="parallel">Parallel-一斉送信</option>
+                <option value="sequential">Sequential-順序送信</option>
             </select>
         </div>
         <div class="form-group" style="flex: 1;">
-            <label>DELAY (ms)</label>
+            <label>Delay(ms)</label>
             <input type="number" id="delay" value="1000">
         </div>
     </div>
 
     <div class="controls">
-        <button id="start" class="main-btn btn-start">START RAID</button>
-        <button id="stop" class="main-btn btn-stop">STOP</button>
+        <button id="start" class="main-btn btn-start">Start</button>
+        <button id="stop" class="main-btn btn-stop">Stop</button>
     </div>
 
     <div id="console"><div class="log-entry">Waiting for input...</div></div>

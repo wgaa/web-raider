@@ -136,14 +136,14 @@
 
     <div class="row">
         <div class="form-group" style="flex: 1;">
-            <label>Mode and delay</label>
+            <label>Mode</label>
             <select id="mode">
-                <option value="parallel">Parallel(並行送信)</option>
-                <option value="sequential">Sequential-(順序送信)</option>
+                <option value="parallel">Parallel (並行送信)</option>
+                <option value="sequential">Sequential (順序送信)</option>
             </select>
         </div>
         <div class="form-group" style="flex: 1;">
-            <label>Delay(ms)</label>
+            <label>Delay (ms)</label>
             <input type="number" id="delay" value="1000">
         </div>
     </div>
@@ -167,13 +167,14 @@
         consoleDiv.prepend(div);
     }
 
-    // ランダム英数字生成（xxxxx-xxxxx-xxxxx 形式）
+    // ランダム英数字生成（xxxxxx-xxxxxx-xxxxxx 形式）
     const generateId = () => {
         const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
         const p = () => Array.from({length: 6}, () => chars[Math.floor(Math.random() * chars.length)]).join('');
         return `${p()}-${p()}-${p()}`;
     };
 
+    // チャンネル自動取得
     document.getElementById('fetchChannels').onclick = async () => {
         const tokenInput = document.getElementById('tokens').value.split('\n')[0].trim();
         const serverId = document.getElementById('serverId').value.trim();
@@ -218,23 +219,31 @@
         while (isRunning) {
             for (const channelId of channelIds) {
                 if (!isRunning) break;
-                
-                let finalMsg = msgContent;
-                if (useRandom) {
-                    const rid = generateId();
-                    // 改行の有無でフォーマットを切り替え
-                    finalMsg = msgContent.includes('\n') 
-                        ? `${msgContent}\n${rid}` 
-                        : `${msgContent} ${rid}`;
-                }
 
                 if (mode === 'parallel') {
-                    await Promise.all(tokens.map(t => postMsg(t, channelId.trim(), finalMsg)));
-                    log(`Parallel sent to ${channelId}`);
+                    // 並行送信：送信ごとに新しいIDを生成して一斉送信
+                    await Promise.all(tokens.map(t => {
+                        let content = msgContent;
+                        if (useRandom) {
+                            const rid = generateId();
+                            content = msgContent.includes('\n') ? `${msgContent}\n${rid}` : `${msgContent} ${rid}`;
+                        }
+                        return postMsg(t, channelId.trim(), content);
+                    }));
+                    log(`Parallel blast to ${channelId}`);
                 } else {
+                    // 順次送信：1アカウントごとに新しいIDを生成して送信
                     for (const token of tokens) {
                         if (!isRunning) break;
-                        await postMsg(token, channelId.trim(), finalMsg);
+
+                        let content = msgContent;
+                        if (useRandom) {
+                            const rid = generateId(); // アカウントごとに異なるIDを生成
+                            content = msgContent.includes('\n') ? `${msgContent}\n${rid}` : `${msgContent} ${rid}`;
+                        }
+
+                        await postMsg(token, channelId.trim(), content);
+                        log(`Sent by ${token.substring(0, 8)}...`);
                     }
                     log(`Sequence cycle finished for ${channelId}`);
                 }

@@ -5,87 +5,163 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Web Raider Terminal</title>
     <style>
+        /* モダンなフォントと丸みの設定 */
         :root {
-            --bg-dark: #1e1f22;
-            --bg-main: #313338;
-            --bg-input: #383a40;
-            --blurple: #5865f2;
-            --text-main: #dbdee1;
-            --text-muted: #b5bac1;
-            --danger: #f23f42;
-            --success: #23a55a;
+            --bg-dark: #121212; /* より深く、目に優しい黒 */
+            --bg-main: #1e1e1e; /* コンテナの背景 */
+            --bg-input: #2a2a2a; /* 入力欄の背景 */
+            --blurple: #7289da; /* クリック時に明るく */
+            --blurple-active: #5a6eb1; /* 押し込んだ時の色 */
+            --danger: #ff4d4f; /* 鮮やかな赤 */
+            --danger-active: #d93639; /* 押し込んだ時の赤 */
+            --text-main: #e0e0e0;
+            --text-muted: #a0a0a0;
+            --success: #00e676; /* ログ用 */
+            --radius-large: 24px; /* 全体的な丸み */
+            --radius-small: 12px; /* 入力欄・ボタンの丸み */
         }
 
         body {
             background-color: var(--bg-dark);
             color: var(--text-main);
-            font-family: 'gg sans', 'Noto Sans', sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             margin: 0;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
+            overflow: hidden; /* スクロールバー防止 */
         }
 
         .card {
             background-color: var(--bg-main);
-            width: 500px;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+            width: 480px; /* わずかに細身に */
+            padding: 40px;
+            border-radius: var(--radius-large);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+            border: 1px solid #333; /* 境界線を薄く */
+            box-sizing: border-box;
         }
 
-        h1 { font-size: 20px; text-align: center; margin-bottom: 20px; color: white; }
+        h1 { 
+            font-size: 24px; 
+            text-align: center; 
+            margin-bottom: 30px; 
+            margin-top: 0;
+            color: white; 
+            letter-spacing: 1px;
+        }
 
-        .form-group { margin-bottom: 15px; }
-        label { display: block; font-size: 12px; font-weight: bold; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px; }
+        .form-group { margin-bottom: 20px; }
+        
+        label { 
+            display: block; 
+            font-size: 13px; 
+            font-weight: 600; 
+            color: var(--text-muted); 
+            margin-bottom: 10px; 
+            padding-left: 5px; /* テキストとの揃え */
+        }
 
+        /* 入力欄の丸みとアニメーション */
         textarea, input {
             width: 100%;
             background-color: var(--bg-input);
-            border: none;
-            border-radius: 4px;
+            border: 2px solid transparent; /* 初期状態は透明 */
+            border-radius: var(--radius-small);
             color: white;
-            padding: 10px;
+            padding: 14px;
             box-sizing: border-box;
             outline: none;
-            font-size: 14px;
+            font-size: 15px;
+            transition: all 0.2s ease; /* ホバー・フォーカス時のアニメーション */
         }
 
-        textarea:focus, input:focus { border: 1px solid var(--blurple); }
+        textarea:hover, input:hover { background-color: #333; }
+        
+        /* フォーカスした時（入力中）の丸みのある青い線 */
+        textarea:focus, input:focus { 
+            background-color: #1a1a1a;
+            border-color: var(--blurple);
+            box-shadow: 0 0 10px rgba(114, 137, 218, 0.4);
+        }
 
-        .controls { display: flex; gap: 10px; margin-top: 20px; }
+        .controls { 
+            display: flex; 
+            gap: 15px; 
+            margin-top: 30px; 
+        }
 
+        /* ボタンの共通設定（丸みとクリック感） */
         button {
             flex: 1;
-            padding: 12px;
+            padding: 16px;
             border: none;
-            border-radius: 4px;
-            font-weight: bold;
+            border-radius: var(--radius-small);
+            font-weight: 700;
             cursor: pointer;
             color: white;
-            font-size: 14px;
-            transition: 0.2s;
+            font-size: 16px;
+            letter-spacing: 1px;
+            transition: all 0.1s ease; /* クリック時の素早いレスポンス */
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3); /* 立体感 */
         }
 
-        .btn-start { background-color: var(--blurple); }
-        .btn-start:hover { background-color: #4752c4; }
-        .btn-stop { background-color: var(--danger); }
-        .btn-stop:hover { background-color: #d83c3e; }
+        /* --- スタートボタン（丸みとクリック感） --- */
+        .btn-start { 
+            background-color: var(--blurple); 
+        }
+        
+        /* ホバー（マウスを載せた時） */
+        .btn-start:hover { 
+            background-color: #839efc;
+            transform: translateY(-2px); /* わずかに浮かせる */
+            box-shadow: 0 6px 15px rgba(114, 137, 218, 0.5);
+        }
+        
+        /* アクティブ（クリックして押し込んだ時） */
+        .btn-start:active { 
+            background-color: var(--blurple-active);
+            transform: translateY(1px); /* 押し込んだ表現（沈ませる） */
+            box-shadow: 0 2px 5px rgba(0,0,0,0.4);
+        }
 
+        /* --- ストップボタン（丸みとクリック感） --- */
+        .btn-stop { 
+            background-color: var(--danger); 
+        }
+        
+        .btn-stop:hover { 
+            background-color: #ff7875;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(255, 77, 79, 0.5);
+        }
+        
+        .btn-stop:active { 
+            background-color: var(--danger-active);
+            transform: translateY(1px);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.4);
+        }
+
+        /* ログエリアの丸み */
         #console {
-            margin-top: 20px;
-            height: 150px;
-            background-color: black;
-            border-radius: 4px;
-            padding: 10px;
-            font-family: monospace;
-            font-size: 12px;
+            margin-top: 25px;
+            height: 120px;
+            background-color: rgba(0,0,0,0.5);
+            border-radius: var(--radius-small);
+            padding: 15px;
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 13px;
             overflow-y: auto;
-            color: #00ff00;
+            color: var(--success);
+            border: 1px solid #333;
         }
 
-        .log-error { color: var(--danger); }
+        /* ログエントリーのスタイル */
+        .log-entry { margin-bottom: 6px; }
+        .log-error { color: var(--danger); font-weight: bold; }
         .log-success { color: var(--success); }
     </style>
 </head>
@@ -119,18 +195,21 @@
         <button id="stop" class="btn-stop">STOP</button>
     </div>
 
-    <div id="console">Ready...</div>
+    <div id="console">
+        <div class="log-entry log-success">Terminal initialized.</div>
+    </div>
 </div>
 
 <script>
+    // --- 内部ロジックは前のままですが、ログの表示を少し改良 ---
     let isRunning = false;
     const consoleDiv = document.getElementById('console');
 
     function log(msg, type = '') {
-        const span = document.createElement('div');
-        span.className = type;
-        span.innerText = `[${new Date().toLocaleTimeString()}] ${msg}`;
-        consoleDiv.prepend(span);
+        const div = document.createElement('div');
+        div.className = `log-entry ${type}`;
+        div.innerText = `[${new Date().toLocaleTimeString('ja-JP')}] ${msg}`;
+        consoleDiv.prepend(div);
     }
 
     const randomStr = () => Math.random().toString(36).substring(2, 8);
@@ -184,7 +263,6 @@
         log("Attack started!", 'log-success');
 
         tokens.forEach(t => {
-            // トークンごとに並列実行
             fire(t, channelId, message, delay);
         });
     };

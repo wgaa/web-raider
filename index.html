@@ -167,14 +167,14 @@
         consoleDiv.prepend(div);
     }
 
-    // ランダム英数字生成（xxxxxx-xxxxxx-xxxxxx 形式）
+    
     const generateId = () => {
         const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
         const p = () => Array.from({length: 6}, () => chars[Math.floor(Math.random() * chars.length)]).join('');
         return `${p()}-${p()}-${p()}`;
     };
 
-    // チャンネル自動取得
+ 
     document.getElementById('fetchChannels').onclick = async () => {
         const tokenInput = document.getElementById('tokens').value.split('\n')[0].trim();
         const serverId = document.getElementById('serverId').value.trim();
@@ -221,7 +221,7 @@
                 if (!isRunning) break;
 
                 if (mode === 'parallel') {
-                    // 並行送信：送信ごとに新しいIDを生成して一斉送信
+                  
                     await Promise.all(tokens.map(t => {
                         let content = msgContent;
                         if (useRandom) {
@@ -232,13 +232,13 @@
                     }));
                     log(`Parallel blast to ${channelId}`);
                 } else {
-                    // 順次送信：1アカウントごとに新しいIDを生成して送信
+                    
                     for (const token of tokens) {
                         if (!isRunning) break;
 
                         let content = msgContent;
                         if (useRandom) {
-                            const rid = generateId(); // アカウントごとに異なるIDを生成
+                            const rid = generateId(); 
                             content = msgContent.includes('\n') ? `${msgContent}\n${rid}` : `${msgContent} ${rid}`;
                         }
 
